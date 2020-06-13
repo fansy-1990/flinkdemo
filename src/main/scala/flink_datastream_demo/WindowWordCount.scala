@@ -6,8 +6,9 @@ import org.apache.flink.streaming.api.windowing.time.Time
 object WindowWordCount {
   def main(args: Array[String]) {
 
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    val text = env.socketTextStream("localhost", 9999)
+//    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.createRemoteEnvironment("node110",6123,1)
+    val text = env.socketTextStream("node110", 9999)
 
     val counts = text.flatMap { _.toLowerCase.split("\\W+") filter { _.nonEmpty } }
       .map { (_, 1) }
