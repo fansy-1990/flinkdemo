@@ -5,19 +5,31 @@ import org.apache.flink.streaming.api.windowing.time.Time
 
 object WindowWordCount {
   def main(args: Array[String]) {
+//
+//    if(args.length != 3){
+//      println("Usage: WindowWordCount <socketHost> <socketPort> <windowSeconds>")
+//      System.exit(1)
+//    }
+//
+//    val host = args(0)
+//    val port = args(1).toInt
+//    val windowSeconds = args(2).toInt
+    val host = "node110"
+    val port = 9999
+    val windowSeconds = 5
 
-//    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    val env = StreamExecutionEnvironment.createRemoteEnvironment("node110",6123,1)
-    val text = env.socketTextStream("node110", 9999)
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    val text = env.socketTextStream(host, port)
 
-    val counts = text.flatMap { _.toLowerCase.split("\\W+") filter { _.nonEmpty } }
-      .map { (_, 1) }
+    val counts = text
+      .flatMap { line =>  line.toLowerCase.split("\\W+").filter ( word => word.nonEmpty ) }
+      .map { word => (word, 1) }
       .keyBy(0)
-      .timeWindow(Time.seconds(5))
+      .timeWindow(Time.seconds(windowSeconds))
       .sum(1)
 
-    counts.print()
 
+    counts.print()
     env.execute("Window Stream WordCount")
   }
 }
